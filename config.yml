@@ -18,14 +18,15 @@ charset: "UTF-8"
 # simple: default and very basic template engine
 # template_toolkit: TT
 
-template: "simple"
-
-# template: "template_toolkit"
-# engines:
-#   template:
-#     template_toolkit:
-#       start_tag: '<%'
-#       end_tag:   '%>'
+template: "template_toolkit"
+engines:
+  template:
+    template_toolkit:
+      start_tag: '<%'
+      end_tag:   '%>'
+  session:
+    Simple:
+      cookie_name: dblog.session
 
 # session engine
 #
@@ -40,9 +41,6 @@ template: "simple"
 # is different for each app.
 #
 #engines:
-#  session:
-#    Simple:
-#      cookie_name: testapp.session
 #
 #engines:
 #  session:
