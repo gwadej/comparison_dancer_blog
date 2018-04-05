@@ -1,5 +1,6 @@
 package dancer_blog;
 use Dancer2;
+use DancerBlog::Schema;
 
 our $VERSION = '0.1';
 
