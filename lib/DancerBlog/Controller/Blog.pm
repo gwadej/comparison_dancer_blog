@@ -9,24 +9,46 @@ use Dancer2::Plugin::DBIC;
 
 our $VERSION = '0.10';
 
-sub model {
+sub model
+{
     return schema->resultset('Blog');
 }
 
-sub index {
-    my @blogs = model->all();
-    return 'Index';
+sub index
+{
+    my @blogs = map { _blog_hash($_) } model->all();
+    return template 'blogs/index.tt', { blogs => \@blogs };
 }
 
-sub show {
-    my $blog = model->find(captures->{'id'});
-    return 'Show';
+sub show
+{
+    my $blog = _blog_hash( model->find(captures->{'id'}) );
+    return template 'blogs/show.tt', { blog => $blog };
 }
 
-sub make {
+sub make
+{
 }
 
-sub create {
+sub create
+{
+}
+
+# -------- Utilities
+
+sub _blog_url
+{
+    my ($id) = @_;
+    return "/blogs/$id";
+}
+
+sub _blog_hash
+{
+    my ($blog) = @_;
+    return {
+        $blog->to_hash,
+        url => _blog_url( $blog->id ),
+    };
 }
 
 1;

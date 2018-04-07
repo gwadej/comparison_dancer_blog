@@ -48,6 +48,26 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->has_many(posts => 'DancerBlog::Schema::Result::Post', 'blog_id');
 __PACKAGE__->has_one( user => 'DancerBlog::Schema::Result::User', {'foreign.id' => 'self.user_id'}, { cascade_delete => 0 } );
 
+sub to_hash
+{
+    my ($self) = @_;
+    return {
+        title       => $self->title,
+        description => $self->description,
+        user        => $self->user->to_hash,
+    };
+}
+
+sub to_hash_with_posts
+{
+    my ($self) = @_;
+
+    my $blog = $self->to_hash;
+    $blog->{posts} = [ map { $_->to_hash } $self->posts ];
+
+    return $blog;
+}
+
 1;
 __END__
 

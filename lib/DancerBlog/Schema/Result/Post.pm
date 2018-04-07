@@ -46,6 +46,16 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key('id');
 __PACKAGE__->has_one( blog => 'DancerBlog::Schema::Result::Blog', {'foreign.id' => 'self.blog_id'}, { cascade_delete => 0 } );
 
+sub to_hash
+{
+    my ($self) = @_;
+
+    return {
+        title   => $self->title,
+        content => $self->content,
+    };
+}
+
 1;
 __END__
 

@@ -1,12 +1,12 @@
 use strict;
 use warnings;
 
-use dancer_blog;
+use DancerBlog;
 use Test::More tests => 2;
 use Plack::Test;
 use HTTP::Request::Common;
 
-my $app = dancer_blog->to_app;
+my $app = DancerBlog->to_app;
 is( ref $app, 'CODE', 'Got app' );
 
 my $test = Plack::Test->create($app);

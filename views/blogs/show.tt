@@ -1,0 +1,21 @@
+<% MACRO link_to(text, link) BLOCK -%>
+<a href="<% link | url %>" target="_blank" rel="noopener"><% text | html %></a>
+<%- END -%>
+<h1><% blog.title %>
+<span class="byline pull-right">by <% blog.user.name %></span></h1>
+
+<p><% link_to('Index', blogs_path) %> | <% link_to(image_tag('noun_38001_cc.svg', width: 20, height: 20, border: 0, skip_pipeline: true), edit_blog_path(@blog)) %></p>
+<p class="description"><% blog.description %></p>
+
+<h2>Posts</h2>
+<% IF blog.posts.empty? %>
+<p>No posts, yet.</p>
+<% link_to('First Post', new_blog_post_url(blog)) %>
+<% ELSE %>
+<% link_to('New Post', new_blog_post_url(blog)) %>
+<ul class="posts">
+  <% FOREACH post in blog.posts %>
+    <li><% link_to(post.title, post_url(post)) %></li>
+  <% END %>
+</ul>
+<% END %>

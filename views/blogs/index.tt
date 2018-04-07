@@ -1,0 +1,13 @@
+<% MACRO link_to(text, link) BLOCK -%>
+<a href="<% link | url %>" target="_blank" rel="noopener"><% text | html %></a>
+<%- END -%>
+<h1>Blogs</h1>
+
+<dl>
+<% FOREACH blog IN blogs -%>
+  <dt><% link_to( blog.title, blog.url ) %></dt>
+  <dd><% blog.description %></dd>
+<% END -%>
+</dl>
+
+<% link_to("Create New", new_blog_path) %>

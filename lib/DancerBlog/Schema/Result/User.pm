@@ -46,6 +46,26 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key('id');
 __PACKAGE__->has_many(blogs => 'DancerBlog::Schema::Result::Blog', 'user_id');
 
+sub to_hash
+{
+    my ($self) = @_;
+
+    return {
+        userid => $self->userid,
+        name   => $self->name,
+    };
+}
+
+sub to_hash_with_blogs
+{
+    my ($self) = @_;
+
+    my $user = $self->to_hash;
+    $user->{blogs} = [ map { $_->to_hash } $self->blogs ];
+
+    return $user;
+}
+
 sub check_password
 {
     my ($self, $password) = @_;
