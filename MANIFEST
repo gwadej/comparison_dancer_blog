@@ -4,7 +4,7 @@ cpanfile
 MANIFEST.SKIP
 .dancer
 Makefile.PL
-lib/dancer_blog.pm
+lib/DancerBlog.pm
 environments/development.yml
 environments/production.yml
 public/favicon.ico

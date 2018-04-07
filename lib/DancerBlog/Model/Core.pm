@@ -1,4 +1,4 @@
-package DancerBlog::Schema::Result::User;
+package DancerBlog::Model::Core;
 
 use warnings;
 use strict;
@@ -6,82 +6,44 @@ use 5.010;
 
 our $VERSION = '0.10';
 
-use base qw/DancerBlog::Model::Core/;
+use base qw/DBIx::Class::Core/;
 use DateTime;
-use Crypt::SaltedHash;
 
-__PACKAGE__->load_components( 'InflateColumn::DateTime');
-
-__PACKAGE__->table('users');
-__PACKAGE__->add_columns(
-    id => {
-        data_type => 'integer',
-        is_nullable => 0,
-        is_auto_increment => 1,
-        is_numeric => 1,
-    },
-    userid => {
-        data_type => 'varchar',
-        size => 100,
-        is_nullable => 0,
-    },
-    name => {
-        data_type => 'varchar',
-        size => 200,
-        is_nullable => 0,
-    },
-    passwordhash => {
-        data_type => 'varchar',
-        is_nullable => 0,
-    },
-    created_at => {
-        data_type => 'datetime',
-        is_nullable => 0,
-    },
-    updated_at => {
-        data_type => 'datetime',
-        is_nullable => 0,
-    },
-);
-__PACKAGE__->set_primary_key('id');
-__PACKAGE__->has_many(blogs => 'DancerBlog::Schema::Result::Blog', 'user_id');
-
-sub check_password
+sub update
 {
-    my ($self, $password) = @_;
-    return Crypt::SaltedHash->validate( $self->passwordhash, $password );
+    my ($self, $args) = @_;
+
+    $args->{updated_at} ||= DateTime->now;
+
+    return $self->SUPER::update( $args );
 }
 
-sub hash_password
+sub insert
 {
-    my ($class, $password) = @_;
-    die "Password cannot be empty\n" unless $password;
-    return Crypt::SaltedHash->new()->add( $password )->generate()
+    my ($self) = @_;
+
+    $self->created_at( DateTime->now() );
+    $self->updated_at( DateTime->now() );
+
+    return $self->SUPER::insert();
 }
 
-sub change_password
-{
-    my ($self, $password) = @_;
-    return $self->update( {
-        passwordhash => __PACKAGE__->hash_password( $password ),
-    } )->discard_changes();
-}
 
 1;
 __END__
 
 =head1 NAME
 
-DancerBlog::Schema::Result::User - [One line description of module's purpose here]
+DancerBlog::Model::Core - [One line description of module's purpose here]
 
 
 =head1 VERSION
 
-This document describes DancerBlog::Schema::Result::User version 0.10
+This document describes DancerBlog::Model::Core version 0.10
 
 =head1 SYNOPSIS
 
-    use DancerBlog::Schema::Result::User;
+    use DancerBlog::Model::Core;
 
 =for author to fill in:
     Brief code example(s) here showing commonest usage(s).
@@ -104,7 +66,7 @@ This document describes DancerBlog::Schema::Result::User version 0.10
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-DancerBlog::Schema::Result::User requires no configuration files or environment variables.
+DancerBlog::Model::Core requires no configuration files or environment variables.
 
 =head1 DEPENDENCIES
 
