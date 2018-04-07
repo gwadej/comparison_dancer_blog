@@ -4,3 +4,4 @@ blib/
 Makefile
 MYMETA.*
 logs/
+db/

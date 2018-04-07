@@ -3,7 +3,7 @@
 # all the settings in this file will be loaded at Dancer's startup.
 
 # Your application's name
-appname: "dancer_blog"
+appname: "DancerBlog"
 
 # The default layout to use for your application (located in
 # views/layouts/main.tt)
@@ -13,6 +13,12 @@ layout: "main"
 # all the magic of encoding and decoding. You should not care
 # about unicode within your app when this setting is set (recommended).
 charset: "UTF-8"
+
+plugins:
+  DBIC:
+    default:
+      dsn: dbi:SQLite:db/dancer_blog.db
+      schema_class: DancerBlog::Schema
 
 # template engine
 # simple: default and very basic template engine

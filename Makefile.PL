@@ -10,24 +10,57 @@ $eumm_version =~ s/_//;
 WriteMakefile(
     NAME                => 'dancer_blog',
     AUTHOR              => q{YOUR NAME <youremail@example.com>},
-    VERSION_FROM        => 'lib/dancer_blog.pm',
+    VERSION_FROM        => 'lib/DancerBlog.pm',
     ABSTRACT            => 'YOUR APPLICATION ABSTRACT',
-    ($eumm_version >= 6.3001
-      ? ('LICENSE'=> 'perl')
-      : ()),
+    LICENSE             => 'perl_5',
     PL_FILES            => {},
-    PREREQ_PM => {
+    MIN_PERL_VERSION    => 5.010000,
+    TEST_REQUIRES => {
         'Test::More'                        => 0,
-        'YAML'                              => 0,
-        'Dancer2'                           => 0.205001,
-        'Dancer2::Plugin::Auth::Extensible' => 0,
-        'DBD::SQLite'                       => 0,
-        'DBIx::Class'                       => 0,
-        'Plack'                             => 0,
-        'Plack::Middleware::Deflater'       => 0,
-        'Template'                          => 0,
-        'Text::MultiMarkdown'               => 0,
+    },
+    PREREQ_PM => {
+        'YAML'                                  => 0,
+        'Crypt::SaltedHash'                     => 0,
+        'Dancer2'                               => 0.205001,
+        'Dancer2::Plugin::Auth::Extensible'     => 0,
+        'Dancer2::Plugin::CSRF'                 => 0,
+        'Dancer2::Plugin::DBIC'                 => 0,
+        'Data::UUID'                            => 0,
+        'DateTime'                              => 0,
+        'DBD::SQLite'                           => 0,
+        'DBIx::Class'                           => 0,
+        'DBIx::Class::InflateColumn::DateTime'  => 0,
+        'Plack'                                 => 0,
+        'Plack::Middleware::Deflater'           => 0,
+        'Template'                              => 0,
+        'Text::MultiMarkdown'                   => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'dancer_blog-*' },
+    realclean           => { FILES => 'db/dancer_log.db' },
+    META_MERGE => {
+        'meta-spec' => {
+            version => 2,
+            url     => 'https://metacpan.org/pod/CPAN::Meta::Spec',
+        },
+        resources => {
+            type => 'git',
+            url => 'git://',
+        },
+    },
 );
+
+sub MY::postamble {
+    return <<"MAKE_FRAG";
+db:
+\tmkdir db
+
+database: db db/dancer_blog.db
+
+db/dancer_blog.db:
+\tbin/create_tables.pl
+
+init_db: database
+\tbin/populate_test.pl
+MAKE_FRAG
+}

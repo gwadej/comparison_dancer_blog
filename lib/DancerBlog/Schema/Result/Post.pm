@@ -7,35 +7,63 @@ use 5.010;
 our $VERSION = '0.10';
 
 use base qw/DBIx::Class::Core/;
+use DateTime;
+
+__PACKAGE__->load_components( 'InflateColumn::DateTime');
 
 __PACKAGE__->table('posts');
 __PACKAGE__->add_columns(
-    uuid => {
-        data_type => 'varchar',
-        size => 36,
+    id => {
+        data_type => 'integer',
+        is_nullable => 0,
+        is_auto_increment => 1,
+        is_numeric => 1,
     },
     title => {
         data_type => 'varchar',
         size => 250,
+        is_nullable => 0,
     },
     content => {
         data_type => 'varchar',
+        is_nullable => 0,
     },
     blog_id => {
         data_type => 'integer',
         is_foreign_key => 1,
+        is_numeric => 1,
+        is_nullable => 0,
     },
     created_at => {
-        data_typee => 'datetime',
-        default_value => \'now()',
+        data_type => 'datetime',
+        is_nullable => 0,
     },
     updated_at => {
-        data_typee => 'datetime',
-        default_value => \'now()',
+        data_type => 'datetime',
+        is_nullable => 0,
     },
 );
-__PACKAGE__->set_primary_key('uuid');
-__PACKAGE__->has_many(cds => 'MyApp::Schema::Result::CD', 'artistid');
+__PACKAGE__->set_primary_key('id');
+__PACKAGE__->has_one( blog => 'DancerBlog::Schema::Result::Blog', {'foreign.id' => 'self.blog_id'}, { cascade_delete => 0 } );
+
+sub update
+{
+    my ($self, $args) = @_;
+
+    $args->{updated_at} ||= DateTime->now;
+
+    return $self->SUPER::update( $args );
+}
+
+sub insert
+{
+    my ($self) = @_;
+
+    $self->{created_at} ||= DateTime->now();
+    $self->{updated_at} ||= DateTime->now();
+
+    return $self->SUPER::insert();
+}
 
 1;
 __END__
