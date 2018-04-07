@@ -10,6 +10,9 @@ use base qw/DancerBlog::Model::Core/;
 use DateTime;
 use Crypt::SaltedHash;
 
+our $USERID_LEN = 100;
+our $NAME_LEN   = 200;
+
 __PACKAGE__->load_components( 'InflateColumn::DateTime');
 
 __PACKAGE__->table('users');
@@ -22,12 +25,12 @@ __PACKAGE__->add_columns(
     },
     userid => {
         data_type => 'varchar',
-        size => 100,
+        size => $USERID_LEN,
         is_nullable => 0,
     },
     name => {
         data_type => 'varchar',
-        size => 200,
+        size => $NAME_LEN,
         is_nullable => 0,
     },
     passwordhash => {

@@ -6,6 +6,7 @@ use 5.010;
 
 use Dancer2 appname => 'DancerBlog';
 use Dancer2::Plugin::DBIC;
+use DancerBlog::Paths qw(:blogs);
 
 our $VERSION = '0.10';
 
@@ -17,17 +18,30 @@ sub model
 sub index
 {
     my @blogs = map { _blog_hash($_) } model->all();
-    return template 'blogs/index.tt', { blogs => \@blogs };
+    return template 'blogs/index.tt', {
+        blogs        => \@blogs,
+        new_blog_url => new_blog_url(),
+    };
 }
 
 sub show
 {
-    my $blog = _blog_hash( model->find(captures->{'id'}) );
-    return template 'blogs/show.tt', { blog => $blog };
+    my $blogid = model->find(captures->{'id'});
+    my $blog = _blog_hash( $blogid );
+
+    return template 'blogs/show.tt', {
+        blog         => $blog,
+        new_post_url => new_blog_post_url( $blogid ),
+    };
 }
 
 sub make
 {
+    return template 'blogs/new.tt', {
+        title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
+        description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
+        new_blog_url    => new_blog_url(),
+    };
 }
 
 sub create
@@ -35,21 +49,6 @@ sub create
 }
 
 # -------- Utilities
-
-sub _blog_url
-{
-    my ($id) = @_;
-    return "/blogs/$id";
-}
-
-sub _blog_hash
-{
-    my ($blog) = @_;
-    return {
-        $blog->to_hash,
-        url => _blog_url( $blog->id ),
-    };
-}
 
 1;
 __END__

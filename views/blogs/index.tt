@@ -1,5 +1,5 @@
 <% MACRO link_to(text, link) BLOCK -%>
-<a href="<% link | url %>" target="_blank" rel="noopener"><% text | html %></a>
+<a href="<% link | url %>"><% text | html %></a>
 <%- END -%>
 <h1>Blogs</h1>
 
@@ -10,4 +10,4 @@
 <% END -%>
 </dl>
 
-<% link_to("Create New", new_blog_path) %>
+<% link_to("Create New", new_blog_url) %>

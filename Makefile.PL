@@ -8,10 +8,10 @@ my $eumm_version = $ExtUtils::MakeMaker::VERSION;
 $eumm_version =~ s/_//;
 
 WriteMakefile(
-    NAME                => 'dancer_blog',
+    NAME                => 'DancerBlog',
     AUTHOR              => q{YOUR NAME <youremail@example.com>},
     VERSION_FROM        => 'lib/DancerBlog.pm',
-    ABSTRACT            => 'YOUR APPLICATION ABSTRACT',
+    ABSTRACT_FROM       => 'lib/DancerBlog.pm',
     LICENSE             => 'perl_5',
     PL_FILES            => {},
     MIN_PERL_VERSION    => 5.010000,
@@ -25,13 +25,14 @@ WriteMakefile(
         'Dancer2::Plugin::Auth::Extensible'     => 0,
         'Dancer2::Plugin::CSRF'                 => 0,
         'Dancer2::Plugin::DBIC'                 => 0,
-        'Data::UUID'                            => 0,
         'DateTime'                              => 0,
         'DBD::SQLite'                           => 0,
         'DBIx::Class'                           => 0,
         'DBIx::Class::InflateColumn::DateTime'  => 0,
+        'Exporter::Easy'                        => 0,
         'Plack'                                 => 0,
         'Plack::Middleware::Deflater'           => 0,
+        'Scalar::Util'                          => 0,
         'Template'                              => 0,
         'Text::MultiMarkdown'                   => 0,
     },

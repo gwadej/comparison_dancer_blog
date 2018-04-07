@@ -1,0 +1,9 @@
+<h1>New Blog</h1>
+
+<form method="POST" action="<% new_blog_url %>" name"blog_new">
+  <label for="title">Title:</label>
+  <input type="text" name="title" size="50" maxlength="<% title_len %>" required/><br />
+  <label for="description">Description:</label>
+  <textarea name="description" cols="80" rows="5" maxlength="<% description_len %>" required></textarea><br />
+  <button type="submit" name="create" value="create">Create</button>
+</form>

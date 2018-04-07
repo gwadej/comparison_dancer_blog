@@ -1,78 +1,85 @@
-package DancerBlog::Schema::Result::Blog;
+package DancerBlog::Paths;
 
 use warnings;
 use strict;
 use 5.010;
+use Scalar::Util qw/looks_like_number/;
+use Exporter::Easy (
+    TAGS => [
+        blogs => [qw(blogs_url blog_url new_blog_url edit_blog_url)],
+        posts => [qw(blog_posts_url post_url new_blog_post_url edit_post_url)],
+        all   => [qw(:blogs :posts)],
+    ],
+);
 
 our $VERSION = '0.10';
 
-use base qw/DancerBlog::Model::Core/;
-use DateTime;
-use DancerBlog::Paths qw(:blogs new_blog_post_url);
-
-our $TITLE_LEN       = 250;
-our $DESCRIPTION_LEN = 1024;
-
-__PACKAGE__->load_components( 'InflateColumn::DateTime');
-
-__PACKAGE__->table('blogs');
-__PACKAGE__->add_columns(
-    id => {
-        data_type => 'integer',
-        is_nullable => 0,
-        is_auto_increment => 1,
-        is_numeric => 1,
-    },
-    title => {
-        data_type => 'varchar',
-        size => $TITLE_LEN,
-        is_nullable => 0,
-    },
-    description => {
-        data_type => 'varchar',
-        size => $DESCRIPTION_LEN,
-        is_nullable => 0,
-    },
-    user_id => {
-        data_type => 'integer',
-        is_foreign_key => 1,
-        is_numeric => 1,
-        is_nullable => 0,
-    },
-    created_at => {
-        data_type => 'datetime',
-        is_nullable => 0,
-    },
-    updated_at => {
-        data_type => 'datetime',
-        is_nullable => 0,
-    },
-);
-__PACKAGE__->set_primary_key('id');
-__PACKAGE__->has_many(posts => 'DancerBlog::Schema::Result::Post', 'blog_id');
-__PACKAGE__->has_one( user => 'DancerBlog::Schema::Result::User', {'foreign.id' => 'self.user_id'}, { cascade_delete => 0 } );
-
-sub to_hash
+sub _ensure_blogid
 {
-    my ($self) = @_;
-    return {
-        title        => $self->title,
-        description  => $self->description,
-        user         => $self->user->to_hash,
-        url          => blog_url( $self->id ),
-        edit_url     => edit_blog_url( $self->id ),
-        new_post_url => new_blog_post_url( $self->id ),
-    };
+    my ($blogid) = @_;
+    die "Missing blog id\n" unless defined $blogid;
+    die "Not a valid blog id format\n" unless looks_like_number $blogid;
+    return;
 }
 
-sub to_hash_with_posts
+sub _ensure_postid
 {
-    my ($self) = @_;
+    my ($postid) = @_;
+    die "Missing post id\n" unless defined $postid;
+    die "Not a valid post id format\n" unless looks_like_number $postid;
+    return;
+}
 
-    my $blog = $self->to_hash;
-    $blog->{posts} = [ map { $_->to_hash } $self->posts ];
+sub blogs_url
+{
+    return '/blogs';
+}
 
-    return $blog;
+sub blog_url
+{
+    my ($id) = @_;
+    _ensure_blogid( $id );
+    return "/blogs/$id";
+}
+
+sub new_blog_url
+{
+    return '/blogs/new';
+}
+
+sub edit_blog_url
+{
+    my ($id) = @_;
+    _ensure_blogid( $id );
+    return "/blogs/$id/edit";
+}
+
+sub blog_posts_url
+{
+    my ($blogid) = @_;
+    _ensure_blogid( $blogid );
+    return "/blogs/$blogid/posts";
+}
+
+sub post_url
+{
+    my ($id) = @_;
+    _ensure_postid( $id );
+    return "/posts/$id";
+}
+
+sub new_blog_post_url
+{
+    my ($blogid) = @_;
+    _ensure_blogid( $blogid );
+    return "/blogs/$blogid/posts/new";
+}
+
+sub edit_post_url
+{
+    my ($id) = @_;
+    _ensure_postid( $id );
+    return "/posts/$id/edit";
 }
 
 1;
@@ -80,16 +87,16 @@ __END__
 
 =head1 NAME
 
-DancerBlog::Schema::Result::Blog - [One line description of module's purpose here]
+DancerBlog::Paths - [One line description of module's purpose here]
 
 
 =head1 VERSION
 
-This document describes DancerBlog::Schema::Result::Blog version 0.10
+This document describes DancerBlog::Paths version 0.10
 
 =head1 SYNOPSIS
 
-    use DancerBlog::Schema::Result::Blog;
+    use DancerBlog::Paths;
 
 =for author to fill in:
     Brief code example(s) here showing commonest usage(s).
@@ -112,7 +119,7 @@ This document describes DancerBlog::Schema::Result::Blog version 0.10
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-DancerBlog::Schema::Result::Blog requires no configuration files or environment variables.
+DancerBlog::Paths requires no configuration files or environment variables.
 
 =head1 DEPENDENCIES
 

@@ -8,6 +8,9 @@ our $VERSION = '0.10';
 
 use base qw/DancerBlog::Model::Core/;
 use DateTime;
+use DancerBlog::Paths qw(:posts);
+
+our $TITLE_LEN = 250;
 
 __PACKAGE__->load_components( 'InflateColumn::DateTime');
 
@@ -21,7 +24,7 @@ __PACKAGE__->add_columns(
     },
     title => {
         data_type => 'varchar',
-        size => 250,
+        size => $TITLE_LEN,
         is_nullable => 0,
     },
     content => {
@@ -51,8 +54,10 @@ sub to_hash
     my ($self) = @_;
 
     return {
-        title   => $self->title,
-        content => $self->content,
+        title    => $self->title,
+        content  => $self->content,
+        url      => post_url( $self->id ),
+        edit_url => edit_post_url( $self->id ),
     };
 }
 
