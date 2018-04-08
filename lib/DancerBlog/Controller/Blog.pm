@@ -6,7 +6,8 @@ use 5.010;
 
 use Dancer2 appname => 'DancerBlog';
 use Dancer2::Plugin::DBIC;
-use DancerBlog::Paths qw(:blogs);
+use Dancer2::Plugin::CSRF;
+use DancerBlog::Paths qw(:blogs new_blog_post_url);
 
 our $VERSION = '0.10';
 
@@ -15,9 +16,14 @@ sub model
     return schema->resultset('Blog');
 }
 
+sub current_user
+{
+    return schema->resultset('User')->find({ userid => 'gwadej' });
+}
+
 sub index
 {
-    my @blogs = map { _blog_hash($_) } model->all();
+    my @blogs = map { _blog_hash( $_ ) } model->all();
     return template 'blogs/index.tt', {
         blogs        => \@blogs,
         new_blog_url => new_blog_url(),
@@ -26,11 +32,12 @@ sub index
 
 sub show
 {
-    my $blogid = model->find(captures->{'id'});
-    my $blog = _blog_hash( $blogid );
+    my $blogid = captures->{'id'}; # Validate
+    my $blog = model->find({id => $blogid});
 
     return template 'blogs/show.tt', {
-        blog         => $blog,
+        blogs_url    => blogs_url(),
+        blog         => $blog->to_hash,
         new_post_url => new_blog_post_url( $blogid ),
     };
 }
@@ -38,6 +45,7 @@ sub show
 sub make
 {
     return template 'blogs/new.tt', {
+#        csrf_token      => get_csrf_token(),  ## After session
         title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
         description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
         new_blog_url    => new_blog_url(),
@@ -46,9 +54,47 @@ sub make
 
 sub create
 {
+#    _ensure_csrf_protection();  ## After session
+#
+    my $title = body_parameters->get( 'title' ); # Validate
+    my $description = body_parameters->get( 'description' ); # Validate
+    my $blog = model->create({
+            user_id => current_user->id,
+            title => $title,
+            description => $description,
+        });
+
+    if($blog)
+    {
+        redirect blog_url( $blog->id );
+    }
+    else
+    {
+        error "Unable to create blog: $DBI::errstr";
+        # need to report the error
+        return template 'blogs/new.tt', {
+#           csrf_token      => get_csrf_token(),  ## After session
+            title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
+            description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
+            title           => $title,
+            description     => $description,
+            new_blog_url    => new_blog_url(),
+        };
+    }
+    return;
 }
 
 # -------- Utilities
+
+sub _ensure_csrf_protection
+{
+    my $csrf_token = param( 'csrf_token' );
+    if( !$csrf_token || !validate_csrf_token( $csrf_token ) )
+    {
+        redirect '/?error=invalid_csrf_token';
+    }
+    return;
+}
 
 1;
 __END__
