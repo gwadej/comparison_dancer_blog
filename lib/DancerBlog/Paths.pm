@@ -6,9 +6,10 @@ use 5.010;
 use Scalar::Util qw/looks_like_number/;
 use Exporter::Easy (
     TAGS => [
-        blogs => [qw(blogs_url blog_url new_blog_url edit_blog_url)],
-        posts => [qw(blog_posts_url post_url new_blog_post_url edit_post_url)],
-        all   => [qw(:blogs :posts)],
+        blogs     => [qw(blogs_url blog_url new_blog_url edit_blog_url)],
+        blog_form => [qw(:blogs new_blog_post_url)],
+        posts     => [qw(blog_posts_url post_url new_blog_post_url edit_post_url)],
+        all       => [qw(:blogs :posts)],
     ],
 );
 

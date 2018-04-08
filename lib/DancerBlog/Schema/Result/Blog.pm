@@ -8,7 +8,7 @@ our $VERSION = '0.10';
 
 use base qw/DancerBlog::Model::Core/;
 use DateTime;
-use DancerBlog::Paths qw(:blogs new_blog_post_url);
+use DancerBlog::Paths qw(:blog_form);
 
 our $TITLE_LEN       = 250;
 our $DESCRIPTION_LEN = 1024;

@@ -1,0 +1,11 @@
+<h1>Edit</h1>
+
+<form method="POST" action="<% blog.edit_url %>" name="blog_edit">
+  <input type="hidden" name="csrf_token" value="<% csrf_token %>" />
+  <input type="text" name="title" size="50" maxlength="<% title_len %>" value="<% blog.title %>" required/><br />
+  <label for="description">Description:</label>
+  <textarea name="description" cols="80" rows="5" maxlength="<% description_len %>"
+    required><% blog.description %></textarea><br />
+  <a href="<% blog.url %>">Cancel</a>
+  <button type="submit" name="button" value="update">Update</button>
+</form>

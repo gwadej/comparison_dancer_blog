@@ -7,23 +7,23 @@ use 5.010;
 use Dancer2 appname => 'DancerBlog';
 use Dancer2::Plugin::DBIC;
 use Dancer2::Plugin::CSRF;
-use DancerBlog::Paths qw(:blogs new_blog_post_url);
+use DancerBlog::Paths qw(:blog_form);
 
 our $VERSION = '0.10';
 
 sub model
 {
-    return schema->resultset('Blog');
+    return schema->resultset( 'Blog' );
 }
 
 sub current_user
 {
-    return schema->resultset('User')->find({ userid => 'gwadej' });
+    return schema->resultset( 'User' )->find( { userid => 'gwadej' } );
 }
 
 sub index
 {
-    my @blogs = map { _blog_hash( $_ ) } model->all();
+    my @blogs = map { $_->to_hash } model->all();
     return template 'blogs/index.tt', {
         blogs        => \@blogs,
         new_blog_url => new_blog_url(),
@@ -33,7 +33,7 @@ sub index
 sub show
 {
     my $blogid = captures->{'id'}; # Validate
-    my $blog = model->find({id => $blogid});
+    my $blog = model->find( {id => $blogid} );
 
     return template 'blogs/show.tt', {
         blogs_url    => blogs_url(),
@@ -49,6 +49,7 @@ sub make
         title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
         description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
         new_blog_url    => new_blog_url(),
+        blogs_url       => blogs_url(),
     };
 }
 
@@ -58,11 +59,13 @@ sub create
 #
     my $title = body_parameters->get( 'title' ); # Validate
     my $description = body_parameters->get( 'description' ); # Validate
-    my $blog = model->create({
-            user_id => current_user->id,
-            title => $title,
+    my $blog = model->create(
+        {
+            user_id     => current_user->id,
+            title       => $title,
             description => $description,
-        });
+        }
+    );
 
     if($blog)
     {
@@ -79,6 +82,52 @@ sub create
             title           => $title,
             description     => $description,
             new_blog_url    => new_blog_url(),
+            blogs_url       => blogs_url(),
+        };
+    }
+    return;
+}
+
+sub edit
+{
+    my $blogid = captures->{'id'}; # Validate
+    my $blog = model->find( {id => $blogid} );
+
+    return template 'blogs/edit.tt', {
+#        csrf_token      => get_csrf_token(),  ## After session
+        title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
+        description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
+        blog            => $blog->to_hash,
+    };
+}
+
+sub update
+{
+#    _ensure_csrf_protection();  ## After session
+#
+    my $blogid = captures->{'id'}; # Validate
+    my $blog = model->find( {id => $blogid} );
+
+    my $title = body_parameters->get( 'title' ); # Validate
+    my $description = body_parameters->get( 'description' ); # Validate
+    if($blog->update( { title => $title, description => $description } ))
+    {
+        redirect blog_url( $blogid );
+    }
+    else
+    {
+        error "Unable to create blog: $DBI::errstr";
+        # need to report the error
+        return template 'blogs/edit.tt', {
+#           csrf_token      => get_csrf_token(),  ## After session
+            title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
+            description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
+            blog            => {
+                title        => $title,
+                description  => $description,
+                url          => blog_url( $blogid ),
+                edit_url     => edit_blog_url( $blogid ),
+            },
         };
     }
     return;
