@@ -7,6 +7,7 @@ use 5.010;
 use Dancer2 appname => 'DancerBlog';
 use Dancer2::Plugin::DBIC;
 use Dancer2::Plugin::CSRF;
+use Dancer2::Plugin::Auth::Extensible;
 use DancerBlog::Paths qw(:blog_form);
 
 our $VERSION = '0.10';
@@ -18,14 +19,36 @@ sub model
 
 sub current_user
 {
-    return schema->resultset( 'User' )->find( { userid => 'gwadej' } );
+    my $user = logged_in_user;
+    return unless $user;
+
+    return schema->resultset( 'User' )->find( { id => $user->{id} } );
+}
+
+sub default_vars
+{
+    my ($blog) = @_;
+    return (
+        DancerBlog::default_vars(),
+        is_owner  => is_owner( $blog ),
+    );
+}
+
+sub is_owner
+{
+    my ($blog) = @_;
+    return 0 unless $blog;
+
+    my $user = current_user;
+    return 0 unless $user;
+    return ($user->id == $blog->user_id) ? 1 : 0;
 }
 
 sub index
 {
     my @blogs = map { $_->to_hash } model->all();
     return template 'blogs/index.tt', {
-        DancerBlog::default_vars(),
+        default_vars(),
         blogs        => \@blogs,
         new_blog_url => new_blog_url(),
     };
@@ -37,7 +60,7 @@ sub show
     my $blog = model->find( {id => $blogid} );
 
     return template 'blogs/show.tt', {
-        DancerBlog::default_vars(),
+        default_vars( $blog ),
         blogs_url    => blogs_url(),
         blog         => $blog->to_hash,
         new_post_url => new_blog_post_url( $blogid ),
@@ -47,7 +70,7 @@ sub show
 sub make
 {
     return template 'blogs/new.tt', {
-        DancerBlog::default_vars(),
+        default_vars(),
 #        csrf_token      => get_csrf_token(),  ## After session
         title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
         description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
@@ -79,7 +102,7 @@ sub create
         error "Unable to create blog: $DBI::errstr";
         # need to report the error
         return template 'blogs/new.tt', {
-            DancerBlog::default_vars(),
+            default_vars(),
 #           csrf_token      => get_csrf_token(),  ## After session
             title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
             description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
@@ -95,10 +118,10 @@ sub create
 sub edit
 {
     my $blogid = captures->{'id'}; # Validate
-    my $blog = model->find( {id => $blogid} );
+    my $blog = model->find( {id => $blogid, user => current_user} );
 
     return template 'blogs/edit.tt', {
-        DancerBlog::default_vars(),
+        default_vars( $blog ),
 #        csrf_token      => get_csrf_token(),  ## After session
         title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
         description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
@@ -111,7 +134,7 @@ sub update
 #    _ensure_csrf_protection();  ## After session
 #
     my $blogid = captures->{'id'}; # Validate
-    my $blog = model->find( {id => $blogid} );
+    my $blog = model->find( {id => $blogid, user => current_user} );
 
     my $title = body_parameters->get( 'title' ); # Validate
     my $description = body_parameters->get( 'description' ); # Validate
@@ -124,7 +147,7 @@ sub update
         error "Unable to create blog: $DBI::errstr";
         # need to report the error
         return template 'blogs/edit.tt', {
-            DancerBlog::default_vars(),
+            default_vars( $blog ),
 #           csrf_token      => get_csrf_token(),  ## After session
             title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
             description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,

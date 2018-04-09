@@ -5,7 +5,7 @@
   <div class="panel-heading"><h2 class="panel-title"><% blog.title %>
 <span class="byline pull-right">by <% blog.user.name %></span></h2></div>
   <div class="panel-body">
-<p><% link_to('Index', blogs_url) %> | <% link_to('Edit', blog.edit_url) %></p>
+<p><% link_to('Index', blogs_url) %> <% IF is_owner %>| <% link_to('Edit', blog.edit_url) %><% END %></p>
 <p class="description"><% blog.description %></p>
 
 <h2>Posts</h2>
