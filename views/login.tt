@@ -1,0 +1,23 @@
+<div id="content">
+<h1>Login Required</h1>
+
+<div id="status" class="panel panel-info">
+  <div class="panel-heading"><h2 class="panel-title">You need to log in to continue</h2></div>
+  <div class="panel-body">
+<% IF message -%>
+      <p><% message | html %></p>
+<% END -%>
+    <form method="POST" name="login" id="login" action="/login">
+        <label for="username">Username:</label>
+        <input type="text" name="username" id="username" autofocus tabindex="1">
+        <br />
+        <label for="password">Password:</label>
+        <input type="password" name="password" id="password" tabindex="2">
+        <br />
+        <input type="hidden" name="return_url" value="<% return_url %>">
+        <button type="submit" class="btn btn-default" value="Login" tabindex="3">Login</button>
+    </form>
+  </div>
+</div>
+
+</div>

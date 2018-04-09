@@ -1,8 +1,9 @@
 <% MACRO link_to(text, link) BLOCK -%>
 <a href="<% link | url %>"><% text | html %></a>
 <%- END -%>
-<h1>Blogs</h1>
-
+<div id="edit" class="panel panel-info">
+  <div class="panel-heading"><h2 class="panel-title">Blogs</h2></div>
+  <div class="panel-body">
 <dl>
 <% FOREACH blog IN blogs -%>
   <dt><% link_to( blog.title, blog.url ) %></dt>
@@ -11,3 +12,5 @@
 </dl>
 
 <% link_to("Create New", new_blog_url) %>
+</div>
+</div>

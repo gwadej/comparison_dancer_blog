@@ -25,6 +25,7 @@ sub index
 {
     my @blogs = map { $_->to_hash } model->all();
     return template 'blogs/index.tt', {
+        DancerBlog::default_vars(),
         blogs        => \@blogs,
         new_blog_url => new_blog_url(),
     };
@@ -36,6 +37,7 @@ sub show
     my $blog = model->find( {id => $blogid} );
 
     return template 'blogs/show.tt', {
+        DancerBlog::default_vars(),
         blogs_url    => blogs_url(),
         blog         => $blog->to_hash,
         new_post_url => new_blog_post_url( $blogid ),
@@ -45,6 +47,7 @@ sub show
 sub make
 {
     return template 'blogs/new.tt', {
+        DancerBlog::default_vars(),
 #        csrf_token      => get_csrf_token(),  ## After session
         title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
         description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
@@ -76,6 +79,7 @@ sub create
         error "Unable to create blog: $DBI::errstr";
         # need to report the error
         return template 'blogs/new.tt', {
+            DancerBlog::default_vars(),
 #           csrf_token      => get_csrf_token(),  ## After session
             title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
             description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
@@ -94,6 +98,7 @@ sub edit
     my $blog = model->find( {id => $blogid} );
 
     return template 'blogs/edit.tt', {
+        DancerBlog::default_vars(),
 #        csrf_token      => get_csrf_token(),  ## After session
         title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
         description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
@@ -119,6 +124,7 @@ sub update
         error "Unable to create blog: $DBI::errstr";
         # need to report the error
         return template 'blogs/edit.tt', {
+            DancerBlog::default_vars(),
 #           csrf_token      => get_csrf_token(),  ## After session
             title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
             description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,

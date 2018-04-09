@@ -14,6 +14,17 @@
 
 </head>
 <body>
+<nav>
+<ul class="nav">
+  <li><a href="/blogs">Blog Index</a></li>
+  <li><% IF user_logged_in -%>
+      <a href="/logout">Log out</a>
+      <%- ELSE -%>
+      <a href="/login">Log in</a>
+      <%- END -%>
+  </li>
+</ul>
+</nav>
 <% content %>
 <div id="footer">
 Powered by <a href="http://perldancer.org/">Dancer2</a> <% dancer_version %>

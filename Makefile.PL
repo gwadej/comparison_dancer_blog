@@ -9,7 +9,7 @@ $eumm_version =~ s/_//;
 
 WriteMakefile(
     NAME                => 'DancerBlog',
-    AUTHOR              => q{YOUR NAME <youremail@example.com>},
+    AUTHOR              => q{G. Wade Johnson <gwadej@cpan.org>},
     VERSION_FROM        => 'lib/DancerBlog.pm',
     ABSTRACT_FROM       => 'lib/DancerBlog.pm',
     LICENSE             => 'perl_5',
@@ -23,6 +23,7 @@ WriteMakefile(
         'Crypt::SaltedHash'                     => 0,
         'Dancer2'                               => 0.205001,
         'Dancer2::Plugin::Auth::Extensible'     => 0,
+        'Dancer::Plugin::Auth::Extensible::Provider::DBIC' => 0,
         'Dancer2::Plugin::CSRF'                 => 0,
         'Dancer2::Plugin::DBIC'                 => 0,
         'DateTime'                              => 0,

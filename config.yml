@@ -19,6 +19,17 @@ plugins:
     default:
       dsn: dbi:SQLite:db/dancer_blog.db
       schema_class: DancerBlog::Schema
+  Auth::Extensible:
+      user_home_page: '/blogs'
+      exit_page: '/blogs'
+      login_page_handler: 'DancerBlog::login_page'
+      realms:
+        users:
+          provider: 'DBIC'
+          disable_roles: 1
+          users_resultset: User
+          users_username_column: userid
+          users_password_check: check_password
 
 # template engine
 # simple: default and very basic template engine

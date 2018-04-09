@@ -1,9 +1,10 @@
 <% MACRO link_to(text, link) BLOCK -%>
 <a href="<% link | url %>"><% text | html %></a>
 <%- END -%>
-<h1><% blog.title %>
-<span class="byline pull-right">by <% blog.user.name %></span></h1>
-
+<div id="edit" class="panel panel-info">
+  <div class="panel-heading"><h2 class="panel-title"><% blog.title %>
+<span class="byline pull-right">by <% blog.user.name %></span></h2></div>
+  <div class="panel-body">
 <p><% link_to('Index', blogs_url) %> | <% link_to('Edit', blog.edit_url) %></p>
 <p class="description"><% blog.description %></p>
 
@@ -19,3 +20,5 @@
   <% END %>
 </ul>
 <% END %>
+</div>
+</div>
