@@ -25,6 +25,22 @@
   </li>
 </ul>
 </nav>
+<% IF notice %>
+<div id="notice" class="panel panel-info">
+  <div class="panel-heading"><h2 class="panel-title">Notice</h2></div>
+  <div class="panel-body">
+    <% notice %>
+  </div>
+</div>
+<% END %>
+<% IF alert %>
+<div id="alert" class="panel panel-error">
+  <div class="panel-heading"><h2 class="panel-title">Error</h2></div>
+  <div class="panel-body">
+    <% alert %>
+  </div>
+</div>
+<% END %>
 <% content %>
 <div id="footer">
 Powered by <a href="http://perldancer.org/">Dancer2</a> <% dancer_version %>

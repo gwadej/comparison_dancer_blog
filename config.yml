@@ -9,6 +9,9 @@ appname: "DancerBlog"
 # views/layouts/main.tt)
 layout: "main"
 
+session: Simple
+show_errors: 0
+
 # when the charset is set to UTF-8 Dancer2 will handle for you
 # all the magic of encoding and decoding. You should not care
 # about unicode within your app when this setting is set (recommended).
@@ -20,16 +23,18 @@ plugins:
       dsn: dbi:SQLite:db/dancer_blog.db
       schema_class: DancerBlog::Schema
   Auth::Extensible:
-      user_home_page: '/blogs'
-      exit_page: '/blogs'
-      login_page_handler: 'DancerBlog::login_page'
-      realms:
-        users:
-          provider: 'DBIC'
-          disable_roles: 1
-          users_resultset: User
-          users_username_column: userid
-          users_password_check: check_password
+    user_home_page: '/blogs'
+    exit_page: '/blogs'
+    login_page_handler: 'DancerBlog::login_page'
+    realms:
+      users:
+        provider: 'DBIC'
+        disable_roles: 1
+        users_resultset: User
+        users_username_column: userid
+        users_password_check: check_password
+  CSRF:
+    session_key_name: 'plugin.csrf'
 
 # template engine
 # simple: default and very basic template engine
@@ -44,6 +49,8 @@ engines:
   session:
     Simple:
       cookie_name: dblog.session
+      cookie_duration: '24 hours'
+      is_http_only: 1
 
 # session engine
 #

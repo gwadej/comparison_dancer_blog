@@ -12,6 +12,8 @@ use DancerBlog::Paths qw(:post_form);
 
 our $VERSION = '0.10';
 
+my $alert;
+
 sub current_user
 {
     my $user = logged_in_user;
@@ -44,6 +46,12 @@ sub show
     my $postid = captures->{'id'}; # Validate
     my $post = resultset('Post')->find( {id => $postid} );
 
+    if(!$post)
+    {
+        DancerBlog::alert( 'Post not found' );
+        redirect blogs_url();
+    }
+
     return template 'posts/show.tt', {
         default_vars( $post ),
         post         => $post->to_hash_with_blog,
@@ -54,7 +62,12 @@ sub make
 {
     my $blogid = captures->{'id'}; # Validate
     my $blog = resultset('Blog')->find( {id => $blogid, owner_id => current_user->id} );
-    # TODO Validate blog returned
+
+    if(!$blog)
+    {
+        DancerBlog::alert( 'You are not authorized to create a post' );
+        redirect blogs_url();
+    }
 
     return template 'posts/new.tt', {
         default_vars(),
@@ -68,10 +81,15 @@ sub make
 sub create
 {
 #    _ensure_csrf_protection();  ## After session
-#
+
     my $blogid = captures->{'id'}; # Validate
     my $blog = resultset('Blog')->find( {id => $blogid, owner_id => current_user->id} );
-    # TODO Validate blog returned
+
+    if(!$blog)
+    {
+        DancerBlog::alert( 'You are not authorized to create a post' );
+        redirect blogs_url();
+    }
 
     my $title = body_parameters->get( 'title' ); # Validate
     my $content = body_parameters->get( 'content' ); # Validate
@@ -90,10 +108,11 @@ sub create
     else
     {
         error "Unable to create post $DBI::errstr";
-        # need to report the error
+        DancerBlog::alert( 'Failed to create the post' );
+
         return template 'posts/new.tt', {
             default_vars(),
-#           csrf_token        => get_csrf_token(),  ## After session
+#            csrf_token        => get_csrf_token(),  ## After session
             title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
             title             => $title,
             content           => $content,
@@ -110,7 +129,8 @@ sub edit
     my $post = resultset( 'Post' )->find( {id => $postid} );
     if(!$post || $post->blog->user_id != current_user->id)
     {
-        # TODO handle failure
+        DancerBlog::alert( 'Post not found' );
+        redirect blogs_url();
     }
 
     return template 'posts/edit.tt', {
@@ -124,12 +144,13 @@ sub edit
 sub update
 {
 #    _ensure_csrf_protection();  ## After session
-#
+
     my $postid = captures->{'id'}; # Validate
     my $post = resultset( 'Post' )->find( {id => $postid} );
     if(!$post || $post->blog->user_id != current_user->id)
     {
-        # TODO handle failure
+        DancerBlog::alert( 'Post not found' );
+        redirect blogs_url();
     }
 
     my $title = body_parameters->get( 'title' ); # Validate
@@ -144,7 +165,7 @@ sub update
         # need to report the error
         return template 'posts/edit.tt', {
             default_vars( $post ),
-#           csrf_token      => get_csrf_token(),  ## After session
+#            csrf_token      => get_csrf_token(),  ## After session
             title_len       => $DancerBlog::Schema::Result::Post::TITLE_LEN,
             post            => {
                 title    => $title,
@@ -164,7 +185,10 @@ sub _ensure_csrf_protection
     my $csrf_token = param( 'csrf_token' );
     if( !$csrf_token || !validate_csrf_token( $csrf_token ) )
     {
-        redirect '/?error=invalid_csrf_token';
+        error 'CSRF protection error';
+        DancerBlog::alert( 'CSRF token is invalid, try again' );
+        my $postid = captures->{'id'}; # Validate
+        redirect post_url( $postid );
     }
     return;
 }

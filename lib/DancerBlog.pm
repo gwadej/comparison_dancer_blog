@@ -13,6 +13,8 @@ my $new_path  = '/new';
 my $edit_path = qr{/(?<id>[1-9][0-9]*)/edit\z};
 my $new_post_path = qr{/(?<id>[1-9][0-9]*)/posts/new\z};
 
+my $alert;
+
 prefix '/blogs' => sub {
     get  ''         => \&DancerBlog::Controller::Blog::index;
     get  $show_path => \&DancerBlog::Controller::Blog::show;
@@ -44,9 +46,27 @@ sub login_page
     };
 }
 
+sub alert
+{
+    my ($msg) = @_;
+    if($msg)
+    {
+        $alert = $msg;
+        return;
+    }
+    else
+    {
+        $msg = $alert;
+        $alert = undef;
+        return $msg;
+    }
+}
+
 sub default_vars
 {
+    my $alert = alert();
     return (
+        ($alert ? (alert => $alert) : ()),
         blogs_url      => blogs_url,
         user_logged_in => defined( logged_in_user ),
     );
