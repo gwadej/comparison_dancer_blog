@@ -21,6 +21,7 @@ WriteMakefile(
     PREREQ_PM => {
         'YAML'                                  => 0,
         'Crypt::SaltedHash'                     => 0,
+        'HTML::Scrubber'                        => 0,
         'Dancer2'                               => 0.205001,
         'Dancer2::Plugin::Auth::Extensible'     => 0,
         'Dancer::Plugin::Auth::Extensible::Provider::DBIC' => 0,

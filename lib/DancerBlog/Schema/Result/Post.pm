@@ -9,6 +9,8 @@ our $VERSION = '0.10';
 use base qw/DancerBlog::Model::Core/;
 use DateTime;
 use DancerBlog::Paths qw(:posts);
+use Text::MultiMarkdown;
+use HTML::Scrubber; # Need to replace this
 
 our $TITLE_LEN = 250;
 
@@ -55,7 +57,7 @@ sub to_hash
 
     return {
         title        => $self->title,
-        content      => $self->content,
+        content      => $self->safe_content,
         html_content => $self->html_content,
         url          => post_url( $self->id ),
         edit_url     => edit_post_url( $self->id ),
@@ -71,11 +73,30 @@ sub to_hash_with_blog
     return $post;
 }
 
+sub clean_markdown
+{
+    my ($unsafe) = @_;
+    my $scrubber = HTML::Scrubber->new( allow => [ qw[ abbr b i super sub ] ] );
+    return $scrubber->scrub( $unsafe );
+}
+
+sub safe_content
+{
+    my ($self) = @_;
+
+    return clean_markdown( $self->content );
+}
+
 sub html_content
 {
     my ($self) = @_;
-    # Do Markdown conversion
-    return $self->content;
+
+    my $m = Text::MultiMarkdown->new(
+        empty_element_suffix => '>',
+        tab_width => 2,
+        disable_bibliography => 0,
+    );
+    return $m->markdown( $self->safe_content );
 }
 
 1;

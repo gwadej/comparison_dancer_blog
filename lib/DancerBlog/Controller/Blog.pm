@@ -54,6 +54,12 @@ sub show
     my $blogid = captures->{'id'}; # Validate
     my $blog = resultset( 'Blog' )->find( {id => $blogid} );
 
+    if(!$blog)
+    {
+        DancerBlog::alert( 'Blog not found' );
+        redirect blogs_url();
+    }
+
     return template 'blogs/show.tt', {
         default_vars( $blog ),
         blogs_url    => blogs_url(),
@@ -95,6 +101,9 @@ sub create
     else
     {
         error "Unable to create blog: $DBI::errstr";
+
+        DancerBlog::alert( 'Failed to create blog' );
+
         # need to report the error
         return template 'blogs/new.tt', {
             default_vars(),
@@ -115,6 +124,12 @@ sub edit
     my $blogid = captures->{'id'}; # Validate
     my $blog = resultset( 'Blog' )->find( {id => $blogid, user => current_user} );
 
+    if(!$blog)
+    {
+        DancerBlog::alert( 'Blog not found' );
+        redirect blogs_url();
+    }
+
     return template 'blogs/edit.tt', {
         default_vars( $blog ),
 #        csrf_token      => get_csrf_token(),  ## After session
@@ -130,6 +145,12 @@ sub update
 #
     my $blogid = captures->{'id'}; # Validate
     my $blog = resultset( 'Blog' )->find( {id => $blogid, user => current_user} );
+
+    if(!$blog)
+    {
+        DancerBlog::alert( 'Blog not found' );
+        redirect blogs_url();
+    }
 
     my $title = body_parameters->get( 'title' ); # Validate
     my $description = body_parameters->get( 'description' ); # Validate

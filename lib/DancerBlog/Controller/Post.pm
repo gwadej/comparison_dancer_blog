@@ -92,7 +92,25 @@ sub create
     }
 
     my $title = body_parameters->get( 'title' ); # Validate
-    my $content = body_parameters->get( 'content' ); # Validate
+    my $unsafe = body_parameters->get( 'content' ); # Validate
+    my $content = DancerBlog::Schema::Result::Post::clean_markdown( $unsafe );
+    if($content ne $unsafe)
+    {
+        # A little conservative
+        warning 'Unsafe content';
+        DancerBlog::alert( 'The content you entered contained unsafe HTML' );
+
+        return template 'posts/new.tt', {
+            default_vars(),
+#            csrf_token        => get_csrf_token(),  ## After session
+            title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
+            title             => $title,
+            content           => $unsafe,
+            new_blog_post_url => new_blog_post_url( $blog->id ),
+            blog_url          => blog_url( $blog->id ),
+        };
+    }
+
     my $post = resultset( 'Post' )->create(
         {
             blog_id => $blog->id,
@@ -154,8 +172,17 @@ sub update
     }
 
     my $title = body_parameters->get( 'title' ); # Validate
-    my $content = body_parameters->get( 'content' ); # Validate
-    if($post->update( { title => $title, content => $content } ))
+    my $unsafe = body_parameters->get( 'content' ); # Validate
+    my $content = DancerBlog::Schema::Result::Post::clean_markdown( $unsafe );
+    if($content ne $unsafe)
+    {
+        # A little conservative
+        warning 'Unsafe content';
+        DancerBlog::alert( 'The content you entered contained unsafe HTML' );
+
+        # Fall thru to template
+    }
+    elsif($post->update( { title => $title, content => $content } ))
     {
         redirect post_url( $postid );
     }
@@ -163,19 +190,20 @@ sub update
     {
         error "Unable to create post $DBI::errstr";
         # need to report the error
-        return template 'posts/edit.tt', {
-            default_vars( $post ),
-#            csrf_token      => get_csrf_token(),  ## After session
-            title_len       => $DancerBlog::Schema::Result::Post::TITLE_LEN,
-            post            => {
-                title    => $title,
-                content  => $content,
-                url          => post_url( $postid ),
-                edit_url     => edit_post_url( $postid ),
-            },
-        };
+        alert( 'Failure to save the post' );
     }
-    return;
+
+    return template 'posts/edit.tt', {
+        default_vars( $post ),
+#            csrf_token      => get_csrf_token(),  ## After session
+        title_len       => $DancerBlog::Schema::Result::Post::TITLE_LEN,
+        post            => {
+            title    => $title,
+            content  => $unsafe,
+            url      => post_url( $postid ),
+            edit_url => edit_post_url( $postid ),
+        },
+    };
 }
 
 # -------- Utilities
