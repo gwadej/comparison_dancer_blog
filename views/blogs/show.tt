@@ -16,7 +16,7 @@
 <% link_to('New Post', new_post_url) %>
 <ul class="posts">
   <% FOREACH post in blog.posts %>
-    <li><% link_to(post.title, post_url(post)) %></li>
+    <li><% link_to(post.title, post.url) %></li>
   <% END %>
 </ul>
 <% END %>

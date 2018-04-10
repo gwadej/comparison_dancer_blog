@@ -1,4 +1,4 @@
-package DancerBlog::Controller::Blog;
+package DancerBlog::Controller::Post;
 
 use warnings;
 use strict;
@@ -8,7 +8,7 @@ use Dancer2 appname => 'DancerBlog';
 use Dancer2::Plugin::DBIC;
 use Dancer2::Plugin::CSRF;
 use Dancer2::Plugin::Auth::Extensible;
-use DancerBlog::Paths qw(:blog_form);
+use DancerBlog::Paths qw(:post_form);
 
 our $VERSION = '0.10';
 
@@ -17,15 +17,15 @@ sub current_user
     my $user = logged_in_user;
     return unless $user;
 
-    return schema->resultset( 'User' )->find( { id => $user->{id} } );
+    return resultset( 'User' )->find( { id => $user->{id} } );
 }
 
 sub default_vars
 {
-    my ($blog) = @_;
+    my ($post) = @_;
     return (
         DancerBlog::default_vars(),
-        is_owner  => is_owner( $blog ),
+        is_owner  => is_owner( $post && $post->blog ),
     );
 }
 
@@ -39,38 +39,29 @@ sub is_owner
     return ($user->id == $blog->user_id) ? 1 : 0;
 }
 
-sub index
-{
-    my @blogs = map { $_->to_hash } resultset( 'Blog' )->all();
-    return template 'blogs/index.tt', {
-        default_vars(),
-        blogs        => \@blogs,
-        new_blog_url => new_blog_url(),
-    };
-}
-
 sub show
 {
-    my $blogid = captures->{'id'}; # Validate
-    my $blog = resultset( 'Blog' )->find( {id => $blogid} );
+    my $postid = captures->{'id'}; # Validate
+    my $post = resultset('Post')->find( {id => $postid} );
 
-    return template 'blogs/show.tt', {
-        default_vars( $blog ),
-        blogs_url    => blogs_url(),
-        blog         => $blog->to_hash_with_posts,
-        new_post_url => new_blog_post_url( $blogid ),
+    return template 'posts/show.tt', {
+        default_vars( $post ),
+        post         => $post->to_hash_with_blog,
     };
 }
 
 sub make
 {
-    return template 'blogs/new.tt', {
+    my $blogid = captures->{'id'}; # Validate
+    my $blog = resultset('Blog')->find( {id => $blogid, owner_id => current_user->id} );
+    # TODO Validate blog returned
+
+    return template 'posts/new.tt', {
         default_vars(),
 #        csrf_token      => get_csrf_token(),  ## After session
-        title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
-        description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
-        new_blog_url    => new_blog_url(),
-        blogs_url       => blogs_url(),
+        title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
+        new_blog_post_url => new_blog_post_url( $blog->id ),
+        blog_url          => blog_url( $blog->id ),
     };
 }
 
@@ -78,33 +69,36 @@ sub create
 {
 #    _ensure_csrf_protection();  ## After session
 #
+    my $blogid = captures->{'id'}; # Validate
+    my $blog = resultset('Blog')->find( {id => $blogid, owner_id => current_user->id} );
+    # TODO Validate blog returned
+
     my $title = body_parameters->get( 'title' ); # Validate
-    my $description = body_parameters->get( 'description' ); # Validate
-    my $blog = resultset( 'Blog' )->create(
+    my $content = body_parameters->get( 'content' ); # Validate
+    my $post = resultset( 'Post' )->create(
         {
-            user_id     => current_user->id,
-            title       => $title,
-            description => $description,
+            blog_id => $blog->id,
+            title   => $title,
+            content => $content,
         }
     );
 
-    if($blog)
+    if($post)
     {
-        redirect blog_url( $blog->id );
+        redirect post_url( $post->id );
     }
     else
     {
-        error "Unable to create blog: $DBI::errstr";
+        error "Unable to create post $DBI::errstr";
         # need to report the error
-        return template 'blogs/new.tt', {
+        return template 'posts/new.tt', {
             default_vars(),
-#           csrf_token      => get_csrf_token(),  ## After session
-            title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
-            description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
-            title           => $title,
-            description     => $description,
-            new_blog_url    => new_blog_url(),
-            blogs_url       => blogs_url(),
+#           csrf_token        => get_csrf_token(),  ## After session
+            title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
+            title             => $title,
+            content           => $content,
+            new_blog_post_url => new_blog_post_url( $blog->id ),
+            blog_url          => blog_url( $blog->id ),
         };
     }
     return;
@@ -112,15 +106,18 @@ sub create
 
 sub edit
 {
-    my $blogid = captures->{'id'}; # Validate
-    my $blog = resultset( 'Blog' )->find( {id => $blogid, user => current_user} );
+    my $postid = captures->{'id'}; # Validate
+    my $post = resultset( 'Post' )->find( {id => $postid} );
+    if(!$post || $post->blog->user_id != current_user->id)
+    {
+        # TODO handle failure
+    }
 
-    return template 'blogs/edit.tt', {
-        default_vars( $blog ),
+    return template 'posts/edit.tt', {
+        default_vars( $post ),
 #        csrf_token      => get_csrf_token(),  ## After session
-        title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
-        description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
-        blog            => $blog->to_hash,
+        title_len       => $DancerBlog::Schema::Result::Post::TITLE_LEN,
+        post            => $post->to_hash_with_blog,
     };
 }
 
@@ -128,29 +125,32 @@ sub update
 {
 #    _ensure_csrf_protection();  ## After session
 #
-    my $blogid = captures->{'id'}; # Validate
-    my $blog = resultset( 'Blog' )->find( {id => $blogid, user => current_user} );
+    my $postid = captures->{'id'}; # Validate
+    my $post = resultset( 'Post' )->find( {id => $postid} );
+    if(!$post || $post->blog->user_id != current_user->id)
+    {
+        # TODO handle failure
+    }
 
     my $title = body_parameters->get( 'title' ); # Validate
-    my $description = body_parameters->get( 'description' ); # Validate
-    if($blog->update( { title => $title, description => $description } ))
+    my $content = body_parameters->get( 'content' ); # Validate
+    if($post->update( { title => $title, content => $content } ))
     {
-        redirect blog_url( $blogid );
+        redirect post_url( $postid );
     }
     else
     {
-        error "Unable to create blog: $DBI::errstr";
+        error "Unable to create post $DBI::errstr";
         # need to report the error
-        return template 'blogs/edit.tt', {
-            default_vars( $blog ),
+        return template 'posts/edit.tt', {
+            default_vars( $post ),
 #           csrf_token      => get_csrf_token(),  ## After session
-            title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
-            description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
-            blog            => {
-                title        => $title,
-                description  => $description,
-                url          => blog_url( $blogid ),
-                edit_url     => edit_blog_url( $blogid ),
+            title_len       => $DancerBlog::Schema::Result::Post::TITLE_LEN,
+            post            => {
+                title    => $title,
+                content  => $content,
+                url          => post_url( $postid ),
+                edit_url     => edit_post_url( $postid ),
             },
         };
     }
@@ -174,16 +174,16 @@ __END__
 
 =head1 NAME
 
-DancerBlog::Controller::Blog - [One line description of module's purpose here]
+DancerBlog::Controller::Post - [One line description of module's purpose here]
 
 
 =head1 VERSION
 
-This document describes DancerBlog::Controller::Blog version 0.10
+This document describes DancerBlog::Controller::Post version 0.10
 
 =head1 SYNOPSIS
 
-    use DancerBlog::Controller::Blog;
+    use DancerBlog::Controller::Post;
 
 =for author to fill in:
     Brief code example(s) here showing commonest usage(s).
@@ -206,7 +206,7 @@ This document describes DancerBlog::Controller::Blog version 0.10
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-DancerBlog::Controller::Blog requires no configuration files or environment variables.
+DancerBlog::Controller::Post requires no configuration files or environment variables.
 
 =head1 DEPENDENCIES
 

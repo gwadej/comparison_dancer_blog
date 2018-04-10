@@ -1,0 +1,15 @@
+<div id="edit" class="panel panel-info">
+  <div class="panel-heading"><h2 class="panel-title">Edit</h2></div>
+  <div class="panel-body">
+    <form method="POST" action="<% post.edit_url %>" name="post_edit">
+      <input type="hidden" name="csrf_token" value="<% csrf_token %>" />
+      <label for="title">Title:</label>
+      <input type="text" name="title" size="50" maxlength="<% title_len %>" value="<% post.title %>" autofocus tabindex="1" required/><br />
+      <label for="description">Content (in markdown):</label><br />
+      <textarea name="content" cols="80" rows="5" tabindex="2"
+          required><% post.content %></textarea><br />
+      <a href="<% post.url %>">Cancel</a>
+      <button type="submit" class="btn btn-default" name="button" value="update" tabindex="3">Update</button>
+    </form>
+</div>
+</div>

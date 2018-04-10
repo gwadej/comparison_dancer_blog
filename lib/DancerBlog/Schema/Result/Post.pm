@@ -54,11 +54,28 @@ sub to_hash
     my ($self) = @_;
 
     return {
-        title    => $self->title,
-        content  => $self->content,
-        url      => post_url( $self->id ),
-        edit_url => edit_post_url( $self->id ),
+        title        => $self->title,
+        content      => $self->content,
+        html_content => $self->html_content,
+        url          => post_url( $self->id ),
+        edit_url     => edit_post_url( $self->id ),
     };
+}
+
+sub to_hash_with_blog
+{
+    my ($self) = @_;
+    my $post = $self->to_hash;
+    $post->{'blog'} = $self->blog->to_hash;
+
+    return $post;
+}
+
+sub html_content
+{
+    my ($self) = @_;
+    # Do Markdown conversion
+    return $self->content;
 }
 
 1;

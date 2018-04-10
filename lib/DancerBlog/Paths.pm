@@ -9,6 +9,7 @@ use Exporter::Easy (
         blogs     => [qw(blogs_url blog_url new_blog_url edit_blog_url)],
         blog_form => [qw(:blogs new_blog_post_url)],
         posts     => [qw(blog_posts_url post_url new_blog_post_url edit_post_url)],
+        post_form => [qw(:posts blog_url)],
         all       => [qw(:blogs :posts)],
     ],
 );
