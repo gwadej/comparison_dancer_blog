@@ -1,15 +1,23 @@
-<div id="edit" class="panel panel-info">
-  <div class="panel-heading"><h2 class="panel-title">Edit</h2></div>
-  <div class="panel-body">
+<div id="edit" class="card bg-light">
+  <div class="card-header"><h2>Edit</h2></div>
+  <div class="card-body">
     <form method="POST" action="<% blog.edit_url %>" name="blog_edit">
       <input type="hidden" name="csrf_token" value="<% csrf_token %>" />
-      <label for="title">Title:</label>
+    <div class="row no-gutters">
+      <div class="col-sm-1"><label for="title">Title:</label></div>
+      <div class="col-sm-11">
       <input type="text" name="title" size="50" maxlength="<% title_len %>" value="<% blog.title %>" autofocus tabindex="1" required/><br />
-      <label for="description">Description:</label>
+      </div>
+    </div>
+    <div class="row no-gutters">
+      <div class="col-sm-1"><label for="description">Description:</label></div>
+      <div class="offset-sm-1 col-sm-11">
       <textarea name="description" cols="80" rows="5" maxlength="<% description_len %>" tabindex="2"
           required><% blog.description %></textarea><br />
-      <a href="<% blog.url %>">Cancel</a>
-      <button type="submit" class="btn btn-default" name="button" value="update" tabindex="3">Update</button>
+      </div>
+    </div>
+      <a class="btn btn-outline-info" href="<% blog.url %>">Cancel</a>
+      <button type="submit" class="btn btn-outline-primary" name="button" value="update" tabindex="3">Update</button>
     </form>
 </div>
 </div>

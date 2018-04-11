@@ -2,46 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="<% settings.charset %>">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, shrink-to-fit=no">
+
   <title><% title %></title>
+  <link rel="stylesheet" href="/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
   <link rel="stylesheet" href="<% request.uri_base %>/css/style.css">
 
-<!-- Grab jQuery from a CDN, fall back to local if necessary -->
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
-<script type="text/javascript">/* <![CDATA[ */
-    !window.jQuery && document.write('<script type="text/javascript" src="<% request.uri_base %>/javascripts/jquery.js"><\/script>')
-/* ]]> */</script>
-
+  <script src="<% request.uri_base %>/javascripts/jquery.js"></script>
+  <!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script> -->
+  <script src="/javascripts/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
 </head>
 <body>
 <nav>
-<ul class="nav">
-  <li><a href="/blogs">Blog Index</a></li>
-  <li><% IF user_logged_in -%>
-      <a href="/logout">Log out</a>
+<ul class="nav justify-content-end">
+  <li class="nav-item"><a class="nav-link" href="/blogs">Blog Index</a></li>
+  <li class="nav-item"><% IF user_logged_in -%>
+      <a class="nav-link" href="/logout">Log out</a>
       <%- ELSE -%>
-      <a href="/login">Log in</a>
+      <a class="nav-link" href="/login">Log in</a>
       <%- END -%>
   </li>
 </ul>
 </nav>
+
+<div class="container">
 <% IF notice %>
-<div id="notice" class="panel panel-info">
-  <div class="panel-heading"><h2 class="panel-title">Notice</h2></div>
-  <div class="panel-body">
+<div id="notice" class="card border-info">
+  <div class="card-header bg-info"><h2>Notice</h2></div>
+  <div class="card-body">
     <% notice %>
   </div>
 </div>
 <% END %>
 <% IF alert %>
-<div id="alert" class="panel panel-error">
-  <div class="panel-heading"><h2 class="panel-title">Error</h2></div>
-  <div class="panel-body">
+<div id="alert" class="card border-danger">
+  <div class="card-header bg-danger"><h2>Error</h2></div>
+  <div class="card-body">
     <% alert %>
   </div>
 </div>
 <% END %>
 <% content %>
+</div>
 <div id="footer">
 Powered by <a href="http://perldancer.org/">Dancer2</a> <% dancer_version %>
 </div>

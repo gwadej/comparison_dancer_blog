@@ -4,7 +4,7 @@ margin: 0;
 margin-bottom: 25px;
 padding: 0;
 background-color: #ddd;
-background-image: url("/images/perldancer-bg.jpg");
+/* background-image: url("/images/perldancer-bg.jpg"); */
 background-repeat: no-repeat;
 background-position: top left;
 
@@ -167,7 +167,6 @@ margin-bottom: 5px;
 
 h1, h2, h3, h4, h5 {
 font-family: sans-serif;
-margin: 1.2em 0 0.6em 0;
 }
 
 p {
@@ -187,3 +186,12 @@ padding-right: 160px;
 font-family: sans-serif;
 font-size: 10px;
 }
+
+label {
+font-weight: bold;
+font-size: 110%;
+}
+
+.card-header h2 { margin-bottom: 0px; }
+label { margin-bottom: 0px; }
+.byline { font-size: 40%; }

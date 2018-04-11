@@ -1,9 +1,9 @@
 <% MACRO link_to(text, link) BLOCK -%>
 <a href="<% link | url %>"><% text | html %></a>
 <%- END -%>
-<div id="show" class="panel panel-info">
-  <div class="panel-heading"><h2 class="panel-title"><% post.title %></h2></div>
-  <div class="panel-body">
+<div id="show" class="card bg-light">
+  <div class="card-header"><h2><% post.title %></h2></div>
+  <div class="card-body">
 <p><% link_to(post.blog.title, post.blog.url) %><% IF is_owner %> | <% link_to('Edit', post.edit_url) %> <% END %></p>
 <div class="content"><% post.html_content %></div>
 

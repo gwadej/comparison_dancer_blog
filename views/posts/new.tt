@@ -1,15 +1,23 @@
-<div id="edit" class="panel panel-info">
-  <div class="panel-heading"><h2 class="panel-title">New Post</h2></div>
-  <div class="panel-body">
+<div id="edit" class="card bg-light">
+  <div class="card-header"><h2>New Post</h2></div>
+  <div class="card-body">
     <form method="POST" action="<% new_blog_post_url %>" name="post_new">
       <input type="hidden" name="csrf_token" value="<% csrf_token %>" />
-      <label for="title">Title:</label>
+    <div class="row no-gutters">
+      <div class="col-sm-1"><label for="title">Title:</label></div>
+      <div class="col-sm-11">
       <input type="text" name="title" size="50" maxlength="<% title_len %>" value="<% title %>" required/><br />
-      <label for="content">Content (in markdown):</label><br />
+      </div>
+    </div>
+    <div class="row no-gutters">
+      <div class="col-sm-4"><label for="content">Content (in markdown):</label></div>
+      <div class="offset-sm-1 col-sm-11">
       <textarea name="content" cols="80" rows="5" maxlength="<% content_len %>"
           required><% content %></textarea><br />
-      <a href="<% blog_url %>">Cancel</a>
-      <button type="submit" name="button" value="create">Create</button>
+      </div>
+    </div>
+      <a class="btn btn-outline-info" href="<% blog_url %>">Cancel</a>
+      <button type="submit" class="btn btn-outline-primary" name="button" value="create">Create</button>
     </form>
 </div>
 </div>

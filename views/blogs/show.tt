@@ -1,10 +1,10 @@
 <% MACRO link_to(text, link) BLOCK -%>
 <a href="<% link | url %>"><% text | html %></a>
 <%- END -%>
-<div id="edit" class="panel panel-info">
-  <div class="panel-heading"><h2 class="panel-title"><% blog.title %>
-<span class="byline pull-right">by <% blog.user.name %></span></h2></div>
-  <div class="panel-body">
+<div id="edit" class="card bg-light">
+  <div class="card-header"><h2><% blog.title %>
+<span class="byline float-right"><% blog.user.name %></span></h2></div>
+  <div class="card-body">
 <p><% link_to('Index', blogs_url) %> <% IF is_owner %>| <% link_to('Edit', blog.edit_url) %><% END %></p>
 <p class="description"><% blog.description %></p>
 
