@@ -26,3 +26,11 @@ $schema->resultset( 'User' )->create(
         passwordhash => DancerBlog::Schema::Result::User->hash_password( 'my_secret_password' ),
     }
 );
+
+$schema->resultset( 'User' )->create(
+    {
+        userid       => 'fred',
+        name         => 'Panzafredicopicog',
+        passwordhash => DancerBlog::Schema::Result::User->hash_password( 'Not the fredmobile' ),
+    }
+);

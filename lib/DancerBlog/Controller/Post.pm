@@ -6,9 +6,9 @@ use 5.010;
 
 use Dancer2 appname => 'DancerBlog';
 use Dancer2::Plugin::DBIC;
-use Dancer2::Plugin::CSRF;
 use Dancer2::Plugin::Auth::Extensible;
 use DancerBlog::Paths qw(:post_form);
+use DancerBlog::CSRF;
 
 our $VERSION = '0.10';
 
@@ -72,7 +72,7 @@ sub make
 
     return template 'posts/new.tt', {
         default_vars(),
-#        csrf_token      => get_csrf_token(),  ## After session
+        csrf_token        => DancerBlog::CSRF::get_token(),
         return_url        => new_blog_post_url( $blogid ),
         title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
         new_blog_post_url => new_blog_post_url( $blog->id ),
@@ -82,8 +82,6 @@ sub make
 
 sub create
 {
-#    _ensure_csrf_protection();  ## After session
-
     my $blogid = captures->{'id'}; # Validate
     my $blog = resultset('Blog')->find( {id => $blogid, owner_id => current_user->id} );
 
@@ -96,52 +94,49 @@ sub create
     my $title = body_parameters->get( 'title' ); # Validate
     my $unsafe = body_parameters->get( 'content' ); # Validate
     my $content = DancerBlog::Schema::Result::Post::clean_markdown( $unsafe );
-    if($content ne $unsafe)
+    if(!validate_csrf_protection())
+    {
+        DancerBlog::alert( 'CSRF token is invalid, try again' );
+        error 'CSRF protection error';
+    }
+    elsif($content ne $unsafe)
     {
         # A little conservative
         warning 'Unsafe content';
         DancerBlog::alert( 'The content you entered contained unsafe HTML' );
-
-        return template 'posts/new.tt', {
-            default_vars(),
-#            csrf_token        => get_csrf_token(),  ## After session
-            return_url        => new_blog_post_url( $blogid ),
-            title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
-            title             => $title,
-            content           => $unsafe,
-            new_blog_post_url => new_blog_post_url( $blog->id ),
-            blog_url          => blog_url( $blog->id ),
-        };
-    }
-
-    my $post = resultset( 'Post' )->create(
-        {
-            blog_id => $blog->id,
-            title   => $title,
-            content => $content,
-        }
-    );
-
-    if($post)
-    {
-        redirect post_url( $post->id );
     }
     else
     {
-        error "Unable to create post $DBI::errstr";
-        DancerBlog::alert( 'Failed to create the post' );
+        my $post = resultset( 'Post' )->create(
+            {
+                blog_id => $blog->id,
+                title   => $title,
+                content => $content,
+            }
+        );
 
-        return template 'posts/new.tt', {
-            default_vars(),
-#            csrf_token        => get_csrf_token(),  ## After session
-            return_url        => new_blog_post_url( $blogid ),
-            title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
-            title             => $title,
-            content           => $content,
-            new_blog_post_url => new_blog_post_url( $blog->id ),
-            blog_url          => blog_url( $blog->id ),
-        };
+        if($post)
+        {
+            redirect post_url( $post->id );
+        }
+        else
+        {
+            error "Unable to create post $DBI::errstr";
+            DancerBlog::alert( 'Failed to create the post' );
+        }
     }
+
+    return template 'posts/new.tt', {
+        default_vars(),
+        csrf_token        => DancerBlog::CSRF::get_token(),
+        return_url        => new_blog_post_url( $blogid ),
+        title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
+        title             => $title,
+        content           => $unsafe,
+        new_blog_post_url => new_blog_post_url( $blog->id ),
+        blog_url          => blog_url( $blog->id ),
+    };
+
     return;
 }
 
@@ -157,7 +152,7 @@ sub edit
 
     return template 'posts/edit.tt', {
         default_vars( $post ),
-#        csrf_token      => get_csrf_token(),  ## After session
+        csrf_token      => DancerBlog::CSRF::get_token(),
         return_url      => edit_post_url( $postid ),
         title_len       => $DancerBlog::Schema::Result::Post::TITLE_LEN,
         post            => $post->to_hash_with_blog,
@@ -166,8 +161,6 @@ sub edit
 
 sub update
 {
-#    _ensure_csrf_protection();  ## After session
-
     my $postid = captures->{'id'}; # Validate
     my $post = resultset( 'Post' )->find( {id => $postid} );
     if(!$post || $post->blog->user_id != current_user->id)
@@ -179,7 +172,13 @@ sub update
     my $title = body_parameters->get( 'title' ); # Validate
     my $unsafe = body_parameters->get( 'content' ); # Validate
     my $content = DancerBlog::Schema::Result::Post::clean_markdown( $unsafe );
-    if($content ne $unsafe)
+
+    if(!validate_csrf_protection())
+    {
+        DancerBlog::alert( 'CSRF token is invalid, try again' );
+        error 'CSRF protection error';
+    }
+    elsif($content ne $unsafe)
     {
         # A little conservative
         warning 'Unsafe content';
@@ -195,12 +194,12 @@ sub update
     {
         error "Unable to create post $DBI::errstr";
         # need to report the error
-        alert( 'Failure to save the post' );
+        DancerBlog::alert( 'Failure to save the post' );
     }
 
     return template 'posts/edit.tt', {
         default_vars( $post ),
-#            csrf_token      => get_csrf_token(),  ## After session
+        csrf_token      => DancerBlog::CSRF::get_token(),
         return_url      => edit_post_url( $postid ),
         title_len       => $DancerBlog::Schema::Result::Post::TITLE_LEN,
         post            => {
@@ -214,17 +213,10 @@ sub update
 
 # -------- Utilities
 
-sub _ensure_csrf_protection
+sub validate_csrf_protection
 {
     my $csrf_token = param( 'csrf_token' );
-    if( !$csrf_token || !validate_csrf_token( $csrf_token ) )
-    {
-        error 'CSRF protection error';
-        DancerBlog::alert( 'CSRF token is invalid, try again' );
-        my $postid = captures->{'id'}; # Validate
-        redirect post_url( $postid );
-    }
-    return;
+    return( $csrf_token && DancerBlog::CSRF::validate_token( $csrf_token ) )
 }
 
 1;

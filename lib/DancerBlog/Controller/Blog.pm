@@ -6,9 +6,9 @@ use 5.010;
 
 use Dancer2 appname => 'DancerBlog';
 use Dancer2::Plugin::DBIC;
-use Dancer2::Plugin::CSRF;
 use Dancer2::Plugin::Auth::Extensible;
 use DancerBlog::Paths qw(:blog_form);
+use DancerBlog::CSRF;
 
 our $VERSION = '0.10';
 
@@ -74,7 +74,7 @@ sub make
 {
     return template 'blogs/new.tt', {
         default_vars(),
-#        csrf_token      => get_csrf_token(),  ## After session
+        csrf_token      => DancerBlog::CSRF::get_token(),
         return_url      => new_blog_url(),
         title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
         description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
@@ -85,8 +85,6 @@ sub make
 
 sub create
 {
-#    _ensure_csrf_protection();  ## After session
-#
     my $title = body_parameters->get( 'title' ); # Validate
     my $description = body_parameters->get( 'description' ); # Validate
     my $blog = resultset( 'Blog' )->create(
@@ -97,7 +95,12 @@ sub create
         }
     );
 
-    if($blog)
+    if(!validate_csrf_protection())
+    {
+        DancerBlog::alert( 'CSRF token is invalid, try again' );
+        error 'CSRF protection error';
+    }
+    elsif($blog)
     {
         redirect blog_url( $blog->id );
     }
@@ -106,20 +109,20 @@ sub create
         error "Unable to create blog: $DBI::errstr";
 
         DancerBlog::alert( 'Failed to create blog' );
-
-        # need to report the error
-        return template 'blogs/new.tt', {
-            default_vars(),
-#           csrf_token      => get_csrf_token(),  ## After session
-            return_url      => new_blog_url(),
-            title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
-            description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
-            title           => $title,
-            description     => $description,
-            new_blog_url    => new_blog_url(),
-            blogs_url       => blogs_url(),
-        };
     }
+
+    return template 'blogs/new.tt', {
+        default_vars(),
+        csrf_token      => DancerBlog::CSRF::get_token(),
+        return_url      => new_blog_url(),
+        title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
+        description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
+        title           => $title,
+        description     => $description,
+        new_blog_url    => new_blog_url(),
+        blogs_url       => blogs_url(),
+    };
+
     return;
 }
 
@@ -136,7 +139,7 @@ sub edit
 
     return template 'blogs/edit.tt', {
         default_vars( $blog ),
-#        csrf_token      => get_csrf_token(),  ## After session
+        csrf_token      => DancerBlog::CSRF::get_token(),
         return_url      => edit_blog_url( $blogid ),
         title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
         description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
@@ -146,8 +149,6 @@ sub edit
 
 sub update
 {
-#    _ensure_csrf_protection();  ## After session
-#
     my $blogid = captures->{'id'}; # Validate
     my $blog = resultset( 'Blog' )->find( {id => $blogid, user => current_user} );
 
@@ -159,7 +160,13 @@ sub update
 
     my $title = body_parameters->get( 'title' ); # Validate
     my $description = body_parameters->get( 'description' ); # Validate
-    if($blog->update( { title => $title, description => $description } ))
+
+    if(!validate_csrf_protection())
+    {
+        DancerBlog::alert( 'CSRF token is invalid, try again' );
+        error 'CSRF protection error';
+    }
+    elsif($blog->update( { title => $title, description => $description } ))
     {
         redirect blog_url( $blogid );
     }
@@ -169,7 +176,7 @@ sub update
         # need to report the error
         return template 'blogs/edit.tt', {
             default_vars( $blog ),
-#           csrf_token      => get_csrf_token(),  ## After session
+            csrf_token      => DancerBlog::CSRF::get_token(),
             return_url      => edit_blog_url( $blogid ),
             title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
             description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
@@ -186,14 +193,10 @@ sub update
 
 # -------- Utilities
 
-sub _ensure_csrf_protection
+sub validate_csrf_protection
 {
     my $csrf_token = param( 'csrf_token' );
-    if( !$csrf_token || !validate_csrf_token( $csrf_token ) )
-    {
-        redirect '/?error=invalid_csrf_token';
-    }
-    return;
+    return( $csrf_token && DancerBlog::CSRF::validate_token( $csrf_token ) )
 }
 
 1;
