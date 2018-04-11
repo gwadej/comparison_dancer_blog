@@ -44,6 +44,7 @@ sub index
     my @blogs = map { $_->to_hash } resultset( 'Blog' )->all();
     return template 'blogs/index.tt', {
         default_vars(),
+        return_url   => blogs_url(),
         blogs        => \@blogs,
         new_blog_url => new_blog_url(),
     };
@@ -62,6 +63,7 @@ sub show
 
     return template 'blogs/show.tt', {
         default_vars( $blog ),
+        return_url   => blog_url( $blogid ),
         blogs_url    => blogs_url(),
         blog         => $blog->to_hash_with_posts,
         new_post_url => new_blog_post_url( $blogid ),
@@ -73,6 +75,7 @@ sub make
     return template 'blogs/new.tt', {
         default_vars(),
 #        csrf_token      => get_csrf_token(),  ## After session
+        return_url      => new_blog_url(),
         title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
         description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
         new_blog_url    => new_blog_url(),
@@ -108,6 +111,7 @@ sub create
         return template 'blogs/new.tt', {
             default_vars(),
 #           csrf_token      => get_csrf_token(),  ## After session
+            return_url      => new_blog_url(),
             title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
             description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
             title           => $title,
@@ -133,6 +137,7 @@ sub edit
     return template 'blogs/edit.tt', {
         default_vars( $blog ),
 #        csrf_token      => get_csrf_token(),  ## After session
+        return_url      => edit_blog_url( $blogid ),
         title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
         description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
         blog            => $blog->to_hash,
@@ -165,6 +170,7 @@ sub update
         return template 'blogs/edit.tt', {
             default_vars( $blog ),
 #           csrf_token      => get_csrf_token(),  ## After session
+            return_url      => edit_blog_url( $blogid ),
             title_len       => $DancerBlog::Schema::Result::Blog::TITLE_LEN,
             description_len => $DancerBlog::Schema::Result::Blog::DESCRIPTION_LEN,
             blog            => {

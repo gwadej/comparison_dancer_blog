@@ -68,7 +68,9 @@ sub default_vars
     return (
         ($alert ? (alert => $alert) : ()),
         blogs_url      => blogs_url,
-        user_logged_in => defined( logged_in_user ),
+        (defined(logged_in_user)
+            ? (user_logged_in => defined( logged_in_user ), user_name => logged_in_user->{name})
+            : ())
     );
 }
 

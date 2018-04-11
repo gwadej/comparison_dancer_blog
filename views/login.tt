@@ -1,9 +1,7 @@
-<div id="content">
-<h1>Login Required</h1>
-
-<div id="status" class="panel panel-info">
-  <div class="panel-heading"><h2 class="panel-title">You need to log in to continue</h2></div>
-  <div class="panel-body">
+<div id="status" class="card bg-light">
+  <div class="card-header">Login</div>
+  <div class="card-body">
+    <h2 class="card-title">You need to log in to continue</h2>
 <% IF message -%>
       <p><% message | html %></p>
 <% END -%>
@@ -18,6 +16,4 @@
         <button type="submit" class="btn btn-default" value="Login" tabindex="3">Login</button>
     </form>
   </div>
-</div>
-
 </div>

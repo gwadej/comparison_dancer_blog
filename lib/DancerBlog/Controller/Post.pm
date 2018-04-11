@@ -54,6 +54,7 @@ sub show
 
     return template 'posts/show.tt', {
         default_vars( $post ),
+        return_url   => post_url( $postid ),
         post         => $post->to_hash_with_blog,
     };
 }
@@ -72,6 +73,7 @@ sub make
     return template 'posts/new.tt', {
         default_vars(),
 #        csrf_token      => get_csrf_token(),  ## After session
+        return_url        => new_blog_post_url( $blogid ),
         title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
         new_blog_post_url => new_blog_post_url( $blog->id ),
         blog_url          => blog_url( $blog->id ),
@@ -103,6 +105,7 @@ sub create
         return template 'posts/new.tt', {
             default_vars(),
 #            csrf_token        => get_csrf_token(),  ## After session
+            return_url        => new_blog_post_url( $blogid ),
             title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
             title             => $title,
             content           => $unsafe,
@@ -131,6 +134,7 @@ sub create
         return template 'posts/new.tt', {
             default_vars(),
 #            csrf_token        => get_csrf_token(),  ## After session
+            return_url        => new_blog_post_url( $blogid ),
             title_len         => $DancerBlog::Schema::Result::Post::TITLE_LEN,
             title             => $title,
             content           => $content,
@@ -154,6 +158,7 @@ sub edit
     return template 'posts/edit.tt', {
         default_vars( $post ),
 #        csrf_token      => get_csrf_token(),  ## After session
+        return_url      => edit_post_url( $postid ),
         title_len       => $DancerBlog::Schema::Result::Post::TITLE_LEN,
         post            => $post->to_hash_with_blog,
     };
@@ -196,6 +201,7 @@ sub update
     return template 'posts/edit.tt', {
         default_vars( $post ),
 #            csrf_token      => get_csrf_token(),  ## After session
+        return_url      => edit_post_url( $postid ),
         title_len       => $DancerBlog::Schema::Result::Post::TITLE_LEN,
         post            => {
             title    => $title,
