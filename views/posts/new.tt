@@ -13,7 +13,7 @@
       <div class="col-sm-4"><label for="content">Content (in markdown):</label></div>
       <div class="offset-sm-1 col-sm-11">
       <textarea name="content" cols="80" rows="5" maxlength="<% content_len %>"
-          required><% content %></textarea><br />
+          required><% content %></textarea>
       </div>
     </div>
       <a class="btn btn-outline-info" href="<% blog_url %>">Cancel</a>

@@ -15,7 +15,7 @@
       <textarea name="content" cols="80" rows="5" tabindex="2"
           required><% post.content %></textarea><br />
       </div>
-      <a class="btn btn-default" href="<% post.url %>">Cancel</a>
+      <a class="btn btn-outline-info" href="<% post.url %>">Cancel</a>
       <button type="submit" class="btn btn-outline-primary" name="button" value="update" tabindex="3">Update</button>
     </form>
 </div>
